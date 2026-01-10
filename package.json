@@ -1,26 +1,50 @@
 {
   "name": "tea_be",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Tea Ordering Backend API",
+  "main": "dist/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon --exec ts-node src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch"
   },
-  "keywords": [],
   "author": "",
-  "license": "ISC",
-  "description": "",
+  "license": "MIT",
   "dependencies": {
-    "bcryptjs": "^3.0.3",
+    "express": "^4.18.2",
+    "mongoose": "^8.0.3",
+    "dotenv": "^16.3.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "joi": "^17.11.0",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "express": "^5.2.1",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
     "express-mongo-sanitize": "^2.2.0",
-    "helmet": "^8.1.0",
-    "mongoose": "^8.20.4",
-    "stripe": "^20.1.0",
-    "zod": "^4.2.1"
+    "compression": "^1.7.4",
+    "morgan": "^1.10.0",
+    "winston": "^3.11.0",
+    "express-async-handler": "^1.2.0"
   },
   "devDependencies": {
-    "@types/express": "^5.0.6"
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.6",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/cors": "^2.8.17",
+    "@types/compression": "^1.7.5",
+    "@types/morgan": "^1.9.9",
+    "@typescript-eslint/eslint-plugin": "^6.16.0",
+    "@typescript-eslint/parser": "^6.16.0",
+    "typescript": "^5.3.3",
+    "ts-node": "^10.9.2",
+    "nodemon": "^3.0.2",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.11"
   }
 }
