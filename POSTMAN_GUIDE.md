@@ -62,7 +62,7 @@ Body:
 
 ### 3. Get Current User
 
-**GET** `{{baseUrl}}/auth/me`
+**GET** `{{baseUrl}}/user/profile`
 
 Headers:
 
