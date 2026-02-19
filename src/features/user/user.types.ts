@@ -11,7 +11,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   role: UserRole;
-  phone?: string;
+  phone: string;
   address?: {
     street?: string;
     city?: string;
@@ -32,7 +32,7 @@ export interface IUserCreate {
   email: string;
   password: string;
   role?: UserRole;
-  phone?: string;
+  phone: string;
 }
 
 export interface IUserUpdate {

@@ -35,7 +35,9 @@ const UserSchema: Schema = new Schema(
     },
     phone: {
       type: String,
+      required: [true, "Please provide a phone number"],
       match: [/^[0-9]{10}$/, "Please provide a valid phone number"],
+      unique: true,
     },
     address: {
       street: String,

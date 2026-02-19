@@ -1,5 +1,6 @@
 export interface ILoginCredentials {
-  email: string;
+  email?: string;
+  phone?: string;
   password: string;
 }
 
@@ -7,7 +8,7 @@ export interface IRegisterData {
   name: string;
   email: string;
   password: string;
-  phone?: string;
+  phone: string;
 }
 
 export interface IAuthTokens {

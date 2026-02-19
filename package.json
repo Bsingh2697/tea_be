@@ -16,7 +16,9 @@
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "test": "jest --coverage",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "doppler:dev": "doppler secrets --config dev && doppler secrets download --no-file --format env --config dev > .env",
+    "doppler:stg": "doppler secrets --config stg && doppler secrets download --no-file --format env --config stg > .env"
   },
   "author": "",
   "license": "MIT",

@@ -31,17 +31,17 @@ export class AuthService {
   }
 
   async login(loginData: ILoginCredentials): Promise<IAuthResponse> {
-    const { email, password } = loginData;
-    const user = await userService.getUserByEmail(email);
+    const { email, phone, password } = loginData;
+    const user = await userService.getUserByEmailOrPhone(email, phone);
     if (!user) {
-      throw new AuthenticationError("Invalid email or password");
+      throw new AuthenticationError("Invalid credentials");
     }
     if (!user.isActive) {
       throw new AuthenticationError("Your account has been deactivated");
     }
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
-      throw new AuthenticationError("Invalid email or password");
+      throw new AuthenticationError("Invalid credentials");
     }
     const userId = user._id as unknown as string;
     const tokens = this.generateTokens({

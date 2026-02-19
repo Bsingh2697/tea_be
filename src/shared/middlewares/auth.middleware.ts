@@ -53,7 +53,7 @@ export const protect = asyncHandler(
     } catch (error) {
       throw new AuthenticationError("Not authorized to access this route");
     }
-  }
+  },
 );
 
 // For Admin
@@ -65,7 +65,7 @@ export const authorize = (...roles: string[]) => {
 
     if (!roles.includes(req.user.role)) {
       throw new AuthorizationError(
-        `User role '${req.user.role}' is not authorized to access this route`
+        `User role '${req.user.role}' is not authorized to access this route`,
       );
     }
 

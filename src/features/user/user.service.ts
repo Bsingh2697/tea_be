@@ -4,9 +4,13 @@ import { NotFoundError, ConflictError } from "@shared/utils/error";
 
 export class UserService {
   async createUser(userData: IUserCreate): Promise<IUserResponse> {
-    const existingUser = await User.findOne({ email: userData.email });
-    if (existingUser) {
+    const existingEmail = await User.findOne({ email: userData.email });
+    if (existingEmail) {
       throw new ConflictError("User with this email already exists");
+    }
+    const existingPhone = await User.findOne({ phone: userData.phone });
+    if (existingPhone) {
+      throw new ConflictError("User with this phone number already exists");
     }
     const user = await User.create(userData);
     return this.sanitizeUser(user);
@@ -22,6 +26,11 @@ export class UserService {
 
   async getUserByEmail(email: string): Promise<IUser | null> {
     return await User.findOne({ email }).select("+password +refreshToken");
+  }
+
+  async getUserByEmailOrPhone(email?: string, phone?: string): Promise<IUser | null> {
+    const query = email ? { email } : { phone };
+    return await User.findOne(query).select("+password +refreshToken");
   }
 
   async updateUser(

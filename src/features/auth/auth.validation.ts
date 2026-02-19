@@ -6,7 +6,7 @@ export const registerSchema = Joi.object({
     name: Joi.string().max(50).required(),
     email: Joi.string().email().required(),
     password: Joi.string().min(6).required(),
-    phone: Joi.string().pattern(/^[0-9]{10}$/),
+    phone: Joi.string().pattern(/^[0-9]{10}$/).required(),
     role: Joi.string()
       .valid(...Object.values(UserRole))
       .optional(),
@@ -15,9 +15,14 @@ export const registerSchema = Joi.object({
 
 export const loginSchema = Joi.object({
   body: Joi.object({
-    email: Joi.string().email().required(),
+    email: Joi.string().email(),
+    phone: Joi.string().pattern(/^[0-9]{10}$/),
     password: Joi.string().required(),
-  }),
+  })
+    .or("email", "phone")
+    .messages({
+      "object.missing": "Either email or phone number is required",
+    }),
 });
 
 export const refreshTokenSchema = Joi.object({
