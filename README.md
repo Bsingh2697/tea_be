@@ -250,6 +250,118 @@ This monolith is designed to be easily split into microservices:
 - Response compression
 - Connection pooling
 
+## 🐳 Docker Setup
+
+The app is containerized using a multi-stage Docker build. Doppler is used to inject secrets into the container — no `.env` file is needed on the server.
+
+### How it works
+
+1. Docker builds the app in a builder stage, then copies only the compiled output into a lean production image
+2. Doppler CLI is installed inside the container
+3. On startup, Doppler uses a service token (`DOPPLER_TOKEN`) to fetch all secrets and inject them as environment variables before the app starts
+
+### Files
+
+| File | Purpose |
+|---|---|
+| `Dockerfile` | Multi-stage build — compiles TypeScript and creates production image |
+| `docker-compose.yml` | Defines the service, port mapping, and passes `DOPPLER_TOKEN` |
+| `.dockerignore` | Excludes `node_modules`, `dist`, `.env`, etc. from the build context |
+
+### Local Docker (for testing)
+
+1. Get a `dev` service token from Doppler (see Doppler section below)
+2. Set the token in your terminal:
+   ```bash
+   export DOPPLER_TOKEN=dp.st.xxxxxxxx
+   ```
+3. Run:
+   ```bash
+   docker-compose up
+   ```
+
+### Deploying to a server
+
+1. SSH into your server
+2. Install Docker and Docker Compose
+3. Clone the repository
+4. Get a service token for the appropriate config (e.g. `prd`) from Doppler
+5. Set the token permanently on the server:
+   ```bash
+   # Add to /etc/environment for persistence across reboots
+   echo "DOPPLER_TOKEN=dp.st.xxxxxxxx" >> /etc/environment
+   source /etc/environment
+   ```
+6. Run:
+   ```bash
+   docker-compose up -d
+   ```
+
+The `-d` flag runs the container in the background.
+
+---
+
+## 🔑 Doppler Setup (Secrets Management)
+
+Doppler is used to manage environment variables across different environments (`dev`, `stg`, `prd`). No secrets are stored in `.env` files on servers.
+
+### How tokens work
+
+Each Doppler service token is scoped to a specific **project + config**. The token itself tells Doppler which environment to pull secrets from — you don't need to specify it anywhere else.
+
+| Environment | Token config to use |
+|---|---|
+| Local development | `dev` |
+| Staging server | `stg` |
+| Production server | `prd` |
+
+### One-time local setup
+
+1. Install Doppler CLI:
+   ```bash
+   brew install dopplerhq/cli/doppler   # macOS
+   ```
+2. Login:
+   ```bash
+   doppler login
+   ```
+3. Link the project to your local directory:
+   ```bash
+   doppler setup   # selects tea_be / dev by default (from doppler.yaml)
+   ```
+
+### Pulling secrets locally (generates .env)
+
+```bash
+npm run doppler:dev   # pulls dev secrets → writes to .env
+npm run doppler:stg   # pulls stg secrets → writes to .env
+```
+
+Use the generated `.env` for local development with `npm run dev`.
+
+### Generating a service token (for Docker / servers)
+
+1. Go to [Doppler Dashboard](https://dashboard.doppler.com)
+2. Select project: `tea_be`
+3. Select the config (e.g. `dev`, `stg`, or `prd`)
+4. Go to **Access** tab → **Service Tokens**
+5. Click **Generate** → copy the token (starts with `dp.st.`)
+6. Set it as `DOPPLER_TOKEN` in your environment or server
+
+### Required secrets
+
+Make sure the following secrets exist in each Doppler config:
+
+```
+NODE_ENV
+PORT
+MONGODB_URI
+JWT_SECRET
+JWT_REFRESH_SECRET
+```
+
+---
+
 ## 🤝 Contributing
 
 1. Fork the repository

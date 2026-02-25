@@ -19,6 +19,7 @@ const envSchema = Joi.object({
   RATE_LIMIT_WINDOW_MS: Joi.number().default(900000), // 15 minutes
   RATE_LIMIT_MAX_REQUESTS: Joi.number().default(100),
   CORS_ORIGIN: Joi.string().default("*"),
+  REDIS_URL: Joi.string().default("redis://redis:6379"),
   LOG_LEVEL: Joi.string()
     .valid("error", "warn", "info", "http", "debug")
     .default("info"),
@@ -60,6 +61,9 @@ export const config = {
   },
   log: {
     level: envVars.LOG_LEVEL as string,
+  },
+  redis: {
+    url: envVars.REDIS_URL as string,
   },
 };
 

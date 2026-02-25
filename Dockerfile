@@ -16,11 +16,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Install Doppler CLI
+RUN apk add --no-cache curl gnupg && \
+    curl -Ls https://cli.doppler.com/install.sh | sh
+
 COPY package.json package-lock.json* ./
 RUN npm ci --omit=dev
 
 COPY --from=builder /app/dist ./dist
 
-EXPOSE 3001
+EXPOSE 3002
 
-CMD ["node", "-r", "module-alias/register", "dist/server.js"]
+CMD ["doppler", "run", "--", "node", "-r", "module-alias/register", "dist/server.js"]
