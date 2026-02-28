@@ -162,19 +162,149 @@ docker ps                 # Empty table = working correctly
 
 ---
 
-## Step 5 — Deploy the App (TODO)
+## Step 5 — Deploy the App
+
+### 5a. Give EC2 access to GitHub (private repo)
+
+Generate SSH key on EC2:
+```bash
+ssh-keygen -t ed25519 -C "tea-ec2" -f ~/.ssh/id_ed25519 -N ""
+cat ~/.ssh/id_ed25519.pub
+```
+
+Add the public key to GitHub:
+- **GitHub → Settings → SSH and GPG keys → New SSH key**
+- Title: `tea-ec2`
+- Paste the public key → **Add SSH key**
+
+This allows EC2 to clone your private repo. Two keys in play:
+
+| Key | Lives on | Connects to | Purpose |
+|---|---|---|---|
+| `tea-ec2-api-key.pem` | Your Mac | EC2 | You → EC2 |
+| `id_ed25519` | EC2 server | GitHub | EC2 → GitHub |
+
+### 5b. Clone repo and start the app
 
 ```bash
 # Clone repo
-git clone <your-github-repo-url>
+git clone git@github.com:Bsingh2697/tea_be.git
 cd tea_be
 
-# Set Doppler token
+# Set Doppler token (get from Doppler dashboard → tea_be → dev → Access → Service Tokens)
 export DOPPLER_TOKEN=dp.st.xxxxxxxx
 
 # Start containers
 docker compose up -d
 ```
+
+### 5c. Allow EC2 IP in MongoDB Atlas
+
+Go to **MongoDB Atlas → Network Access → Add IP Address**
+- Add `13.234.134.238`
+- Click **Confirm**
+
+Without this, MongoDB rejects connections from your EC2 server.
+
+### 5d. Verify
+
+```bash
+docker ps   # should show tea_api + tea_redis running
+
+curl -X POST http://13.234.134.238:8080/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test","email":"test@example.com","password":"password123","phone":"1234567890"}'
+# Should return success:true with JWT tokens
+```
+
+---
+
+## Step 6 — GitHub Actions CI/CD (Auto Deploy)
+
+Every push to `main` automatically deploys to EC2. No manual SSH needed.
+
+### How it works
+
+```
+You push to main
+↓
+GitHub spins up a temporary Ubuntu runner
+↓
+Runner SSHes into your EC2 (using stored secrets)
+↓
+Runs: git pull + docker compose up --build
+↓
+New version live → runner is destroyed
+```
+
+### 6a. Add GitHub Secrets
+
+Go to **GitHub repo → Settings → Secrets and variables → Actions → New repository secret**
+
+Add these 3 secrets:
+
+| Secret name | Value |
+|---|---|
+| `EC2_HOST` | `13.234.134.238` |
+| `EC2_USER` | `ubuntu` |
+| `EC2_SSH_KEY` | contents of `~/.ssh/tea-ec2-api-key.pem` |
+
+To get the key contents:
+```bash
+cat ~/.ssh/tea-ec2-api-key.pem
+# Copy everything from -----BEGIN RSA PRIVATE KEY----- to -----END RSA PRIVATE KEY-----
+# Do NOT include the % at the end
+```
+
+### 6b. Workflow file
+
+File: `.github/workflows/deploy.yml`
+
+```yaml
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH into EC2 and deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/tea_be
+            git pull origin main
+            docker compose up -d --build
+```
+
+**Line by line:**
+
+| Line | What it does |
+|---|---|
+| `on: push: branches: main` | Trigger on every push to main |
+| `runs-on: ubuntu-latest` | GitHub spins up a temp Ubuntu machine |
+| `uses: appleboy/ssh-action` | Pre-built action that handles SSH |
+| `host/username/key` | Your EC2 credentials from secrets |
+| `git pull origin main` | Pull latest code on EC2 |
+| `docker compose up -d --build` | Rebuild image and restart containers |
+
+### 6c. Push and verify
+
+```bash
+git add .github/workflows/deploy.yml
+git commit -m "feat: add GitHub Actions auto-deploy workflow"
+git push origin main
+```
+
+Then go to **GitHub repo → Actions tab** to watch it run.
 
 ---
 
