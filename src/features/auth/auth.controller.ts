@@ -10,15 +10,15 @@ export class AuthController {
       return ResponseHandler.created(
         res,
         authResponse,
-        "User registered successfully"
+        "User registered successfully",
       );
-    }
+    },
   );
   login = asyncHandler(
     async (req: Request, res: Response, _next: NextFunction) => {
       const authResponse = await authService.login(req.body);
       return ResponseHandler.success(res, authResponse, "Login successful");
-    }
+    },
   );
   refreshToken = asyncHandler(
     async (req: Request, res: Response, _next: NextFunction) => {
@@ -27,24 +27,24 @@ export class AuthController {
       return ResponseHandler.success(
         res,
         tokens,
-        "Token refreshed successfully"
+        "Token refreshed successfully",
       );
-    }
+    },
   );
   logout = asyncHandler(
     async (req: Request, res: Response, _next: NextFunction) => {
       await authService.logout(req.user._id);
       return ResponseHandler.success(res, null, "Logout Successful");
-    }
+    },
   );
   getCurrentUser = asyncHandler(
     async (req: Request, res: Response, _next: NextFunction) => {
       return ResponseHandler.success(
         res,
         req.user,
-        "Current user fetched successfully"
+        "Current user fetched successfully",
       );
-    }
+    },
   );
 }
 export default new AuthController();
