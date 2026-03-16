@@ -32,7 +32,6 @@ const { value: envVars, error } = envSchema
 if (error) {
   throw new Error(`Config validation error: ${error.message}`);
 }
-
 export const config = {
   env: envVars.NODE_ENV as string,
   port: envVars.PORT as number,
